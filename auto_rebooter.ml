@@ -61,6 +61,13 @@ module Auto_rebooter = struct
 
   let check_test = fun () -> is_connected bbox_conf.test_uri test_times.connection_timeout
 
+  let say_rebooted = fun () ->
+    let open Core.Time in
+    let tm = Core.Time.now () in
+    let str_tm = Core.Time.to_string tm in
+    let message = str_tm ^ " Rebooted\n" in
+    print_endline message
+
   let reboot_full = fun () ->
     let run_resp rquest =
       let (rsp, body) = Lwt_main.run rquest in
@@ -94,7 +101,7 @@ module Auto_rebooter = struct
     let req =
       Client.post ~body: (Cohttp_lwt_body.of_string bbox_conf.login_payload) ~headers: content_headers bbox_conf.login_uri
     in
-    print_endline ("rebooted");
+    say_rebooted ();
     full_reboot req
 
   type status = Offline | Disconnected | OK
@@ -116,7 +123,6 @@ module Auto_rebooter = struct
     in
     Lwt_main.run task;
     loop_check_reboot ()
-
 
   let () =
     loop_check_reboot ()
